@@ -1,4 +1,4 @@
-CXX			:= -c++
+CXX			:= -gcc
 CXXFLAGS 	:= -pedantic-errors -Wall -Wextra -Werror
 LDFLAGS 	:= `sdl2-config --libs --cflags` -lSDL2_image -lm
 BUILD 		:= ./build
