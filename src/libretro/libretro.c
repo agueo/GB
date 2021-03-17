@@ -1,6 +1,24 @@
 /* 
- * Copyright (C) 2020 agueo
- *
+ * Copyright (c) 2020-2021 agueo
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
  * This file is part of GB emulator
  */
 
@@ -48,16 +66,14 @@ void retro_get_system_info(struct retro_system_info *info)
     if(info == NULL) {
         return;
     }
-    if (gb == NULL) {
-        gb_init();
-    }
 
     memset(info, 0, sizeof(*info));
     /* TODO update this to use the info from GB.c */
-    info->library_name = gb->kName_;
-    info->library_version = gb->kVersion_;
+    info->library_name = EMU_NAME;
+    info->library_version = EMU_VERSION;
     info->need_fullpath = false;
     info->valid_extensions = "gb|gbc";
+    info->block_extract = false;
 }
 
 /*
@@ -155,13 +171,16 @@ void retro_init(void)
 
     gb->reset();
 }
+
 void retro_reset(void) {}
 
+/* TODO - update with real video memory */
 unsigned short frame_buffer[160*144];
 void retro_run(void) 
 {
     /* CPU is 4.16MHz at 59.7 fps */
-    gb->run(69681);
+    //gb->run(69681);
+    gb->run(12);
 
     /* 738 samples per frame */
     for(int i = 0; i < 738; ++i) {
