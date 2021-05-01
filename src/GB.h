@@ -30,8 +30,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "cpu.h"
+#include "mmu.h"
+
 /* Other "class" files here */
 
 /* Constants */
@@ -44,43 +47,30 @@
 #define EMU_VERSION "0.0.1"
 
 /* GB definition */
-typedef struct reg_ {
-    uint8_t A, F, B, C, D, E, H, L;
-    uint16_t SP, PC;
-} registers_t;
-
-typedef struct flags_ {
-    uint8_t Z;
-    uint8_t N;
-    uint8_t H;
-    uint8_t C;
-
-    bool HALT;
-} flags_t;
-
 typedef struct gb_ {
     const char *kName_;
     const char *kVersion_;
-
-    /* Memory - 64 KB addr space*/
-    uint8_t memory[MEM_SIZE];
 
     /* 10 Registers */
     registers_t *reg;
     flags_t *flags;
 
+    /* Memory - 64 KB addr space*/
+    /* Might be good to use a sort of struct for this */
+    uint8_t memory[MEM_SIZE];
+
     /* PPU, APU, MMU */
 
     /* function callbacks */
-    void (* reset) (void);
-    void (* read)  (void);
-    void (* write) (void);
-    void (* run)   (unsigned);
+    void (* reset_cb) (void);
+    void (* read_cb)  (void);
+    void (* write_cb) (void);
+    void (* run_cb)   (unsigned);
 
 } gb_t;
 
 /* Global GB object */
-extern gb_t *gb;
+extern gb_t *gb_ctx;
 
 /* Functions */
 void gb_init(void);
@@ -89,6 +79,7 @@ void gb_load_rom(const void *, size_t);
 void gb_unload(void);
 void gb_run(unsigned);
 unsigned gb_step(void);
+
 
 /* creation functions */
 gb_t * gb_new(void);

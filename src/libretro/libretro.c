@@ -31,7 +31,7 @@
 /*
  * Constants and externs
  */
-extern gb_t *gb;
+extern gb_t *gb_ctx;
 
 
 /* 
@@ -101,6 +101,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 /* Load a game */
 bool retro_load_game(const struct retro_game_info *info)
 {
+    if (info == NULL) return true;
     printf("================================\n");
     printf("Retro game info: \n");
     printf("Game: %s\n", info->path);
@@ -169,7 +170,7 @@ void retro_init(void)
 
     gb_init();
 
-    gb->reset();
+    gb_ctx->reset_cb();
 }
 
 void retro_reset(void) {}
@@ -180,7 +181,7 @@ void retro_run(void)
 {
     /* CPU is 4.16MHz at 59.7 fps */
     //gb->run(69681);
-    gb->run(12);
+    gb_ctx->run_cb(12);
 
     /* 738 samples per frame */
     for(int i = 0; i < 738; ++i) {

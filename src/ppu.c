@@ -21,3 +21,6 @@
  * 
  * This file is part of GB emulator
  */
+
+#include "GB.h"
+#include "ppu.h"

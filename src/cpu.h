@@ -24,25 +24,48 @@
 
 #ifndef CPU_H
 #define CPU_H
-#include "GB.h"
 #include "mmu.h"
 
-/* Helper macros */
-#define REG_PC (gb->reg->PC)
-#define REG_SP (gb->reg->SP)
-#define REG_A (gb->reg->A)
-#define REG_B (gb->reg->B)
-#define REG_C (gb->reg->C)
-#define REG_D (gb->reg->D)
-#define REG_E (gb->reg->E)
-#define REG_H (gb->reg->H)
-#define REG_L (gb->reg->L)
-#define u16(h,l) ((h << 8) | l)
+typedef struct reg_ {
+    union {
+        struct { uint8_t A; uint8_t F; };
+        uint16_t AF;
+    };
+    union {
+        struct { uint8_t B; uint8_t C; };
+        uint16_t BC;
+    };
+    union {
+        struct { uint8_t D; uint8_t E; };
+        uint16_t DE;
+    };
+    union {
+        struct { uint8_t H; uint8_t L; };
+        uint16_t HL;
+    };
+    uint16_t SP, PC;
+} registers_t;
 
-#define FLAG_Z (gb->flags->Z)
-#define FLAG_N (gb->flags->N)
-#define FLAG_H (gb->flags->H)
-#define FLAG_C (gb->flags->C)
+#define Z(x) (((x) >> 0) & 0xf)
+#define N(x) (((x) >> 1) & 0xf)
+#define C(x) (((x) >> 2) & 0xf)
+#define H(x) (((x) >> 4) & 0xf)
+
+typedef struct flags_ {
+    bool HALT;
+} flags_t;
+
+
+unsigned opcode_nop(void *, uint16_t value);
+unsigned opcode_ld_reg16_u16(void *reg, uint16_t value);
+unsigned opcode_ld_mem_u16(void *reg, uint16_t);
+unsigned opcode_add_u16(void * reg, uint16_t value);
+unsigned opcode_sub_u16(void * reg, uint16_t value);
+unsigned opcode_and(void *reg, uint16_t value);
+unsigned opcode_or(void *reg, uint16_t value);
+unsigned opcode_xor(void *reg, uint16_t value);
+unsigned opcode_inc_u16(void * reg, uint16_t value);
+unsigned opcode_dec_u16(void * reg, uint16_t value);
 
 typedef enum instruction_ {
     NOP,            /* 0x00 NOP */
@@ -78,25 +101,20 @@ typedef enum instruction_ {
     LD_E_u8,        /* 0x1E */
     RRA,            /* 0x1F */
     LD_SP_u16 = 0x31,
-    UNINPLEMENTED = 256
+    NUM_OPS
 } INSTRUCTION;
+
+static struct opcode {
+    const char *disassembly;
+    unsigned cycles;
+    unsigned (*opcode_cb) (void *reg, uint16_t value);
+} opcodes[NUM_OPS] = {
+    [NOP] = { "NOP", 4, opcode_nop },
+    [LD_BC_u16] = { "LD BC, u16", 8, opcode_ld_reg16_u16 },
+    [LD_BC_A] = { "LD BC, A", 8, opcode_ld_reg16_u16 },
+    [LD_SP_u16] = { "LD SP, u16", 8, opcode_ld_reg16_u16 },
+};
 
 unsigned cpu_decode_op(void);
 
-/* Common opcode functions */
-unsigned opcode_ld_u8(uint8_t *reg, uint8_t value);
-unsigned opcode_ld_u16(uint8_t *reg1, uint8_t *reg2, uint8_t valueL, uint8_t valueH);
-unsigned opcode_ld16_u16(uint16_t *reg, uint16_t value);
-unsigned opcode_ld_mem_u16();
-unsigned opcode_add_u8();
-unsigned opcode_add_u16();
-unsigned opcode_sub_u8();
-unsigned opcode_sub_u16();
-unsigned opcode_and();
-unsigned opcode_or();
-unsigned opcode_xor();
-unsigned opcode_inc_u8(uint8_t *);
-unsigned opcode_inc_u16(uint8_t *, uint8_t *);
-unsigned opcode_dec_u8(uint8_t *);
-unsigned opcode_dec_u16(uint8_t *, uint8_t *);
 #endif

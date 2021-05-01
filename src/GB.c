@@ -24,22 +24,25 @@
 
 #include "GB.h"
 
-gb_t *gb = NULL;
+gb_t *gb_ctx = NULL;
 
 /* Reset
  * Reset the gameboy memory, registers and flags
  */
 void gb_reset(void) 
 {
+    assert(gb_ctx != NULL);
+
     /* Reset the gb memory */
-    memset(gb->memory, 0, MEM_SIZE);
+    memset(gb_ctx->memory, 0, MEM_SIZE);
+
     /* Reset Registers & flags */
-    memset(gb->flags, 0, sizeof(flags_t));
-    memset(gb->reg, 0, sizeof(registers_t));
+    memset(gb_ctx->reg, 0, sizeof(registers_t));
+    memset(gb_ctx->flags, 0, sizeof(flags_t));
 }
 
 /* gb_run
- * \params: cycles we want to run 
+ * @param: cycles we want to run 
  * iterate through opcodes in memory while current cycle count is less than 
  * cycles given
  */
@@ -65,7 +68,7 @@ unsigned gb_step()
  */
 void gb_load_rom(const void *data, size_t size) 
 {
-    memcpy(gb->memory, data, size);
+    memcpy(gb_ctx->memory, data, size);
 }
 
 /* gb_unload
@@ -73,12 +76,8 @@ void gb_load_rom(const void *data, size_t size)
  */
 void gb_unload(void)
 {
-    memset(gb->memory, 0, sizeof(gb->memory));
+    memset(gb_ctx->memory, 0, sizeof(gb_ctx->memory));
 }
-
-/* TODO Find what this was */
-void gb_read(void) {}
-void gb_write(void) {}
 
 /* Helper function to help generate new gb obj */
 gb_t *gb_new(void)
@@ -112,38 +111,42 @@ gb_t *gb_new(void)
 
 void gb_destroy(void) 
 {
-    if (gb == NULL) {
-        return;
-    }
+    assert(gb_ctx != NULL);
+    free(gb_ctx->flags);
+    free(gb_ctx->reg);
+    free(gb_ctx);
 }
 
 void gb_init(void)
 {
     /* Make sure GB is not already initialized */
-    if(gb != NULL) {
+    if(gb_ctx != NULL) {
         return;
     }
 
-    gb = gb_new();
-    /* set up callbacks */
-    if (gb != NULL) {
-        gb->reset = &gb_reset;
-        gb->run = &gb_run;
+    gb_ctx = gb_new();
+
+    if (gb_ctx == NULL) {
+        return;
     }
 
+    /* set up callbacks */
+    gb_ctx->reset_cb = &gb_reset;
+    gb_ctx->run_cb = &gb_run;
+
     printf("===============================\n");
-    printf("%s COPYRIGHT (C) 2020 agueo\n", gb->kName_);
-    printf("Version: %s\n\n", gb->kVersion_);
+    printf("%s COPYRIGHT (C) 2020 agueo\n", gb_ctx->kName_);
+    printf("Version: %s\n\n", gb_ctx->kVersion_);
     printf("Initial Register state:\n");
-    printf("PC: 0x%04x\nSP: 0x%04x\n", gb->reg->PC, gb->reg->SP);
-    printf("AF: 0x%02x%02x\n", gb->reg->A, gb->reg->F);
-    printf("BC: 0x%02x%02x\n", gb->reg->B, gb->reg->C);
-    printf("DE: 0x%02x%02x\n", gb->reg->D, gb->reg->E);
-    printf("HL: 0x%02x%02x\n", gb->reg->H, gb->reg->L);
+    printf("PC: 0x%04x\nSP: 0x%04x\n", gb_ctx->reg->PC, gb_ctx->reg->SP);
+    printf("AF: 0x%02x%02x\n", gb_ctx->reg->A, gb_ctx->reg->F);
+    printf("BC: 0x%02x%02x\n", gb_ctx->reg->B, gb_ctx->reg->C);
+    printf("DE: 0x%02x%02x\n", gb_ctx->reg->D, gb_ctx->reg->E);
+    printf("HL: 0x%02x%02x\n", gb_ctx->reg->H, gb_ctx->reg->L);
     printf("Initial Flag state:\n");
-    printf("Z: 0x%x\n", gb->flags->Z);
-    printf("N: 0x%x\n", gb->flags->N);
-    printf("H: 0x%x\n", gb->flags->H);
-    printf("C: 0x%x\n", gb->flags->C);
+    printf("Z: 0x%x\n", Z(gb_ctx->reg->F));
+    printf("N: 0x%x\n", N(gb_ctx->reg->F));
+    printf("H: 0x%x\n", H(gb_ctx->reg->F));
+    printf("C: 0x%x\n", C(gb_ctx->reg->F));
     printf("===============================\n");
 }

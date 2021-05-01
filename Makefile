@@ -40,7 +40,7 @@ else ifneq ($(findstring MINGW,$(shell uname -a)),)
 endif
 
 CORE_DIR    += .
-TARGET_NAME := gameboy
+TARGET_NAME := microboy
 LIBM		    = -lm
 
 ifeq ($(ARCHFLAGS),)

@@ -22,6 +22,7 @@
  * This file is part of GB emulator
  */
 
+#include "GB.h"
 #include "mmu.h"
 
 /* Memory Map */
@@ -39,9 +40,9 @@
  * FFFF - FFFF Interrupts Enable Register (IE)
  */
 
-uint8_t mmu_read(uint16_t addr)
+uint8_t * mmu_read(uint16_t addr)
 {
-    return 0;
+    return &gb_ctx->memory[addr];
 }
 
 /* mmu_write
@@ -52,5 +53,5 @@ uint8_t mmu_read(uint16_t addr)
 void mmu_write(uint16_t addr, uint8_t data)
 {
     /* Go to memory location, do a write if possible */
-    gb->memory[addr] = data;
+    gb_ctx->memory[addr] = data;
 }
